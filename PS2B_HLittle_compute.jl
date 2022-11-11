@@ -8,3 +8,6 @@ eps_update(prim, mut; rho1=mut.ρ)
 
 #see if the quadrature function works
 Likelihood_Array = Quadrature_Likelihood(prim, mut; param=mut.param)
+
+#see what the quadrature function looks like in the log likelohood function
+Likelihood = Log_Like_Quad(param_vec=mut.param)

@@ -163,9 +163,12 @@ function Quadrature_Likelihood(prim::Primitives, mut::Mutable; param::Array{Floa
         for t = 1:3
             #first, adjust the nodes as instructed
             u_1d_trans = log.(u_1d) .+ holder[i,t,1]
+            #u_1d_trans = log.(u_1d) .+ alpha0 + dot(prim.X[i,:], beta) + gamma*prim.Zit[i,t]
             weighted_sum = 0
             for k = 1:31 #lenth of the transformed node grid
-                weighted_sum += w_1d[k] * cdf(distrib, (-holder[i,t,2] - rho*u_1d_trans[k])) * pdf(distrib, (u_1d_trans[k]/(1/(1-rho))))/(1/(1-rho)) * (1/u_1d_trans[k]) #weight*m()*f()*jacobian
+                weighted_sum += w_1d[k] * cdf(distrib, (-holder[i,t,2] - rho*u_1d_trans[k]))*pdf(distrib, (u_1d_trans[k]/(1/(1-rho))))/(1/(1-rho)) * (1/u_1d_trans[k]) #weight*m()*f()*jacobian
+                #changed the pdf bit below
+                #weighted_sum += w_1d[k] * cdf(distrib, (-holder[i,t,2] - rho*u_1d_trans[k]))*pdf(distrib, (u_1d_trans[k]/(1/(1-rho))))/(1/(1-rho)) * pdf(distrib, u_1d_trans[k]) * (1/u_1d_trans[k]) #weight*m()*f()*jacobian
             end #close loop over each of the nodes
             like_array[i, t, 2] = weighted_sum #use the weighted sum to fill in the likelihood function for person i in time t
         end #close loop over time periods, little t
@@ -205,7 +208,20 @@ function Quadrature_Likelihood(prim::Primitives, mut::Mutable; param::Array{Floa
 end
 
 
+#copying over the function from PS1B
+function Log_Like_Quad(param_vec::Vector{Float64})
 
+    #run the quadrature function, getting a big matrix over people, time periods, and decisions T
+    like_array = Quadrature_Likelihood(prim, mut; param_vec)
+
+    sum = 0 #initialize
+    for i in eachindex(like_array)
+        sum += log(like_array[i])
+    end #close the for loop
+
+    return sum
+
+end #close function for log likelihood
 
 
 
