@@ -112,15 +112,24 @@ end #close the function for the epsilon updates
 function Quadrature_Likelihood(prim::Primitives, mut::Mutable; param::Array{Float64, 1})
 
     #call the elements from the parameter vector
-    alpha0 = param[1]
+    #=
+    alpha0 = mut.α0
+    alpha1 = mut.α1
+    alpha2 = mut.α2
+    beta = mut.β
+    gamma = mut.γ
+    rho = mut.ρ
+    =#
+    alpha0 = param[1] 
     alpha1 = param[2]
     alpha2 = param[3]
     beta = param[4:18]
     gamma = param[19]
     rho = param[20]
 
+
     #update the epsilons accordingly
-    eps_update(prim, mut, rho1=rho)
+    #eps_update(prim, mut, rho1=rho)
 
     #create a large matrix so we can call the appropriate values in our bounds
     holder = zeros(prim.N, 3, 2)
@@ -166,7 +175,8 @@ function Quadrature_Likelihood(prim::Primitives, mut::Mutable; param::Array{Floa
             #u_1d_trans = log.(u_1d) .+ alpha0 + dot(prim.X[i,:], beta) + gamma*prim.Zit[i,t]
             weighted_sum = 0
             for k = 1:31 #lenth of the transformed node grid
-                weighted_sum += w_1d[k] * cdf(distrib, (-holder[i,t,2] - rho*u_1d_trans[k]))*pdf(distrib, (u_1d_trans[k]/(1/(1-rho))))/(1/(1-rho)) * (1/u_1d_trans[k]) #weight*m()*f()*jacobian
+                weighted_sum += w_1d[k] * cdf(distrib, (-holder[i,t,2] - rho*u_1d_trans[k]))*pdf(distrib, (u_1d_trans[k]/(1/(1-rho))))/(1/(1-rho)) * (1/u_1d[k]) #weight*m()*f()*jacobian
+                #weighted_sum += w_1d[k] * cdf(distrib, (-holder[i,t,2] - rho*u_1d_trans[k]))*pdf(distrib, (u_1d_trans[k]/(1/(1-rho))))/(1/(1-rho)) * (1/u_1d_trans[k]) #weight*m()*f()*jacobian
                 #changed the pdf bit below
                 #weighted_sum += w_1d[k] * cdf(distrib, (-holder[i,t,2] - rho*u_1d_trans[k]))*pdf(distrib, (u_1d_trans[k]/(1/(1-rho))))/(1/(1-rho)) * pdf(distrib, u_1d_trans[k]) * (1/u_1d_trans[k]) #weight*m()*f()*jacobian
             end #close loop over each of the nodes
@@ -182,7 +192,8 @@ function Quadrature_Likelihood(prim::Primitives, mut::Mutable; param::Array{Floa
             u2_2d_trans = log.(u2_2d) .+ holder[i,t,2] #using alpha1 with second panel of holder
             weighted_sum = 0
             for k = 1:705 #lenth of the transformed node grid
-                weighted_sum += w_2d[k]*cdf(distrib, (-alpha2 - dot(prim.X[i,:], beta) - gamma*prim.Zit[i,t] - rho*u2_2d_trans[k]))*pdf(distrib, (u2_2d_trans[k]-rho*u1_2d_trans[k]))*(pdf(distrib, (u1_2d_trans[k]/(1/(1-rho))))/(1/(1-rho)))*(1/u1_2d_trans[k])*(1/u2_2d_trans[k]) 
+                weighted_sum += w_2d[k]*cdf(distrib, (-alpha2 - dot(prim.X[i,:], beta) - gamma*prim.Zit[i,t] - rho*u2_2d_trans[k]))*pdf(distrib, (u2_2d_trans[k]-rho*u1_2d_trans[k]))*(pdf(distrib, (u1_2d_trans[k]/(1/(1-rho))))/(1/(1-rho)))*(1/u1_2d[k])*(1/u2_2d[k]) 
+                #weighted_sum += w_2d[k]*cdf(distrib, (-alpha2 - dot(prim.X[i,:], beta) - gamma*prim.Zit[i,t] - rho*u2_2d_trans[k]))*pdf(distrib, (u2_2d_trans[k]-rho*u1_2d_trans[k]))*(pdf(distrib, (u1_2d_trans[k]/(1/(1-rho))))/(1/(1-rho)))*(1/u1_2d_trans[k])*(1/u2_2d_trans[k]) 
             end #close loop over each of the nodes
             like_array[i, t, 3] = weighted_sum #use the weighted sum to fill in the likelihood function for person i in time t
         end #close loop over time periods, little t
@@ -196,7 +207,8 @@ function Quadrature_Likelihood(prim::Primitives, mut::Mutable; param::Array{Floa
             u2_2d_trans = log.(u2_2d) .+ holder[i,t,2] #using alpha1 with second panel of holder
             weighted_sum = 0
             for k = 1:705 #lenth of the transformed node grid
-                weighted_sum += w_2d[k]*cdf(distrib, (alpha2 + dot(prim.X[i,:], beta) + gamma*prim.Zit[i,t] - rho*u2_2d_trans[k]))*pdf(distrib, (u2_2d_trans[k]-rho*u1_2d_trans[k]))*(pdf(distrib, (u1_2d_trans[k]/(1/(1-rho))))/(1/(1-rho)))*(1/u1_2d_trans[k])*(1/u2_2d_trans[k]) 
+                weighted_sum += w_2d[k]*cdf(distrib, (alpha2 + dot(prim.X[i,:], beta) + gamma*prim.Zit[i,t] - rho*u2_2d_trans[k]))*pdf(distrib, (u2_2d_trans[k]-rho*u1_2d_trans[k]))*(pdf(distrib, (u1_2d_trans[k]/(1/(1-rho))))/(1/(1-rho)))*(1/u1_2d[k])*(1/u2_2d[k]) 
+                #weighted_sum += w_2d[k]*cdf(distrib, (alpha2 + dot(prim.X[i,:], beta) + gamma*prim.Zit[i,t] - rho*u2_2d_trans[k]))*pdf(distrib, (u2_2d_trans[k]-rho*u1_2d_trans[k]))*(pdf(distrib, (u1_2d_trans[k]/(1/(1-rho))))/(1/(1-rho)))*(1/u1_2d_trans[k])*(1/u2_2d_trans[k]) 
             end #close loop over each of the nodes
             like_array[i, t, 4] = weighted_sum #use the weighted sum to fill in the likelihood function for person i in time t
         end #close loop over time periods, little t
@@ -207,22 +219,103 @@ function Quadrature_Likelihood(prim::Primitives, mut::Mutable; param::Array{Floa
 
 end
 
+function Log_Like_Quad()
 
-#copying over the function from PS1B
-function Log_Like_Quad(param_vec::Vector{Float64})
+    #compute the quadrature function
+    Likelihood_Array = Quadrature_Likelihood(prim, mut; param=mut.param)
 
-    #run the quadrature function, getting a big matrix over people, time periods, and decisions T
-    like_array = Quadrature_Likelihood(prim, mut; param_vec)
+    #for each observation, look at the relevant duration to know whether or not they repaid it (1, 2, 3, or 4)
+    ###note that prim.Ti gives the relevant value, but we'll have to convert the float to an integer
+    Likelihood_Collapsed = zeros(prim.N, 3)
+    for i = 1:prim.N
+        Likelihood_Collapsed[i,:] = Likelihood_Array[i,:, Int64(prim.Ti[i])]
+    end #close the loop over individuals
 
     sum = 0 #initialize
-    for i in eachindex(like_array)
-        sum += log(like_array[i])
-    end #close the for loop
+    for i = 1:prim.N
+        for t = 1:3
+            sum += log((Likelihood_Collapsed[i, t])^(prim.Yit[i,t])*(1-Likelihood_Collapsed[i, t])^(1-prim.Yit[i,t]))
+        end #close the for loop over periods
+    end #close the for loop over individuals
 
     return sum
 
 end #close function for log likelihood
 
+
+#everyone is struggling with this question -> we are going to put it on the back burner
+function GHK_j(prim::Primitives, mut::Mutable; param::Array{Float64, 1})
+
+    alpha0 = param[1] 
+    alpha1 = param[2]
+    alpha2 = param[3]
+    beta = param[4:18]
+    gamma = param[19]
+    rho = param[20]
+
+    #to look at the probability of option j, we need to redefine everything relative to that option (that means we'll have to do this whole thing for option j)
+
+    #begin by redefining the variables in difference relative to a choice (see JF's slide 24/32 in the 2nd slide deck):
+    #create the Σ matrix as on slide 24 and as directed by Mary/John
+    Σ = ((1/(1-rho)^2)*(1/1-rho^2)).*[1 rho rho^2; rho 1 rho; rho^2 rho 1]
+    L = cholesky(Σ)
+    #we have ν = Lη, where η is a joint standard normal, here of three dimensions... but each individual already has η pulled for themselves
+    ###this is further making me think we should be defining j as time periods 0, 1, 2 since we have three η terms already pulled for each indiv i
+    
+end #close GHK function
+
+function AR_Likelihood(prim::Primitives, mut::Mutable; param::Array{Float64, 1}) #the log likelihood using the accept reject method, see slide 21-22/32 in JF's lecture 2
+
+    alpha0 = param[1] 
+    alpha1 = param[2]
+    alpha2 = param[3]
+    beta = param[4:18]
+    gamma = param[19]
+    rho = param[20]
+
+    #create a large matrix so we can call the appropriate values in our bounds (just as we'd done in the quadtrature method)
+    holder = zeros(prim.N, 3, 2)
+    for i=1:prim.N
+        for t = 1:3
+            holder[i, t, 1] = alpha0 + dot(prim.X[i,:], beta) + gamma*prim.Zit[i,t] #really key to see diff between holder panels 1 and 2!
+            holder[i, t, 2] = alpha1 + dot(prim.X[i,:], beta) + gamma*prim.Zit[i,t] #diff is in the alpha0 vs alpha1 terms
+        end #close loop over time periods, little t
+    end #close loop over individuals    
+
+    #create a very large array in which to store the elements of the likelihood
+    like_array = zeros(prim.N, 3, 4) #individuals, time periods, duration values
+
+    #initialize the distribution we will be using from which to pull our error term draws and also to use the cdf and pdf funcs as in the quadrature method
+    distrib = Normal(0,1)
+
+    #fill in for T=1,  no Accept/Reject used here
+    for i=1:prim.N
+        for t = 1:3
+            like_array[i, t, 1] = cdf(distrib, (-holder[i,t,1]/(1/(1-rho))))
+        end #close loop over time periods, little t
+    end #close loop over individuals  
+    
+    #fill in for T=2
+    ###note that we're told to set the simulation draws to 100 in the pset; for each individual i and each period t, you'll draw 100 error terms 
+    ###note that we also need to store the error terms for every i,t within T=2 so we can calculate mbar
+    for i=1:prim.N
+        for t = 1:3
+            #first, adjust the nodes as instructed
+            
+            for k = 1:100 #number of simulations
+                weighted_sum += 
+            end #close loop over each of the simulations
+            like_array[i, t, 2] = weighted_sum #use the weighted sum to fill in the likelihood function for person i in time t
+        end #close loop over time periods, little t
+    end #close loop over individuals 
+
+
+
+
+
+
+
+end
 
 
 
@@ -243,6 +336,22 @@ Graveyard of shitty code and functions
 
     u_d2 = prim.mat_d2 #copy to then transform the nodes as instructed, leaving weights unchanged
     for i = 1:length(prim.mat_d2) #note that we will transform either
+
+
+#copying over the function from PS1B
+function Log_Like_Quad(param_vec::Vector{Float64})
+
+    #run the quadrature function, getting a big matrix over people, time periods, and decisions T
+    like_array = Quadrature_Likelihood(prim, mut; param_vec)
+
+
+
+    return sum
+
+end #close function for log likelihood
+
+############
+#Use the cholesky decomposition function!
 
 
 

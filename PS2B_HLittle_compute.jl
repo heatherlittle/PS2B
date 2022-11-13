@@ -10,4 +10,20 @@ eps_update(prim, mut; rho1=mut.ρ)
 Likelihood_Array = Quadrature_Likelihood(prim, mut; param=mut.param)
 
 #see what the quadrature function looks like in the log likelohood function
-Likelihood = Log_Like_Quad(param_vec=mut.param)
+Likelihood = Log_Like_Quad()
+
+
+
+
+
+
+
+
+#=
+###########test to see where I'm breaking
+#doing what I want the function above to do manually
+sum = 0 #initialize
+    for i in eachindex(Likelihood_Array)
+        sum += log(Likelihood_Array[i])
+    end #close the for loop
+println(sum)
