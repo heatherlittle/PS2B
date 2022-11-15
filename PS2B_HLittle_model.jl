@@ -289,7 +289,7 @@ function GHK_Likelihood(prim::Primitives, mut::Mutable; param::Array{Float64, 1}
         #we will want to use their relevant probabilities that they did not choose T=1, which is equal to the complement of like_array[i,1,1]
 
         #initialize a big matrix in which we will hold individual i's 100 simulations of error terms; the accept reject rules depend on little t and thus will be decided later
-        mat_i = zeros(100,3) #where columns are ei0, ei1, ei2
+        mat_i = zeros(100,2) #where columns are ei0, ei1
         #draw the ϵi0 terms
         for s = 1:100
             mat_i[s, 1] = rand(distrib_uni)*(1-like_array[i,1,1])+like_array[i,1,1] #this is a transformation of the uniform distribution that will only give us the relevant error terms
